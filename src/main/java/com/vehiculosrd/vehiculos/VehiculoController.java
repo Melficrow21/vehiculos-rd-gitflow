@@ -22,8 +22,7 @@ public class VehiculoController {
         this.vehiculoService = vehiculoService;
     }
 
-    // GET /api/vehiculos?marca=toyota&anio=2020&precioMin=200000&precioMax=800000&provincia=Santo+Domingo
-    // Publico: no requiere token
+    // GET /api/vehiculos
     @GetMapping
     public ResponseEntity<?> listar(
             @RequestParam(required = false) String marca,
@@ -45,14 +44,13 @@ public class VehiculoController {
         );
     }
 
-    // GET /api/vehiculos/mios -> las publicaciones del usuario logueado, en cualquier estado.
-    // Requiere estar logueado. Va antes de /{id} para que no choque la ruta.
+    // GET /api/vehiculos/mios
     @GetMapping("/mios")
     public List<VehiculoResponse> listarMios(Authentication auth) {
         return vehiculoService.listarPorUsuario(auth.getName());
     }
 
-    // GET /api/vehiculos/{id} -> detalle. Publico.
+    // GET /api/vehiculos/{id}
     @GetMapping("/{id}")
     public ResponseEntity<?> obtener(@PathVariable UUID id) {
         try {
@@ -63,7 +61,7 @@ public class VehiculoController {
         }
     }
 
-    // POST /api/vehiculos -> crear publicacion. Requiere estar logueado.
+    // POST /api/vehiculos
     @PostMapping
     public ResponseEntity<?> crear(
             @Valid @RequestBody VehiculoRequest request,
@@ -73,7 +71,7 @@ public class VehiculoController {
         return ResponseEntity.status(HttpStatus.CREATED).body(creado);
     }
 
-    // PUT /api/vehiculos/{id} -> editar. Solo el dueño de la publicacion.
+    // PUT /api/vehiculos/{id}
     @PutMapping("/{id}")
     public ResponseEntity<?> editar(
             @PathVariable UUID id,
@@ -81,17 +79,24 @@ public class VehiculoController {
             Authentication auth
     ) {
         try {
-            return ResponseEntity.ok(vehiculoService.editar(id, request, auth.getName()));
+            VehiculoResponse actualizado = vehiculoService.editar(id, request, auth.getName());
+
+            return ResponseEntity.ok(Map.of(
+                    "mensaje", "Vehiculo actualizado correctamente",
+                    "vehiculo", actualizado
+            ));
+
         } catch (SecurityException e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body(Map.of("error", e.getMessage()));
+
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(Map.of("error", e.getMessage()));
         }
     }
 
-    // DELETE /api/vehiculos/{id} -> eliminar. Solo el dueño de la publicacion.
+    // DELETE /api/vehiculos/{id}
     @DeleteMapping("/{id}")
     public ResponseEntity<?> eliminar(@PathVariable UUID id, Authentication auth) {
         try {
