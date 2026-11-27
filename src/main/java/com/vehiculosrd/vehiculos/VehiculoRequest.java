@@ -3,6 +3,8 @@ package com.vehiculosrd.vehiculos;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
+import jakarta.validation.constraints.Max;
 
 import java.math.BigDecimal;
 
@@ -15,8 +17,11 @@ public class VehiculoRequest {
     private String modelo;
 
     @NotNull(message = "El año es obligatorio")
+    @Positive(message = "El año debe ser mayor a cero")
+    @Max(value = 2026, message = "El año no puede ser mayor a 2026")
     private Integer anio;
 
+    @PositiveOrZero(message = "El kilometraje no puede ser negativo")
     private Integer kilometraje;
 
     @NotNull(message = "El precio es obligatorio")
