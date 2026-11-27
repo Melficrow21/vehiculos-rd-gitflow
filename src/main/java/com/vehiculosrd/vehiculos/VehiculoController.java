@@ -62,14 +62,23 @@ public class VehiculoController {
     // PUT /api/vehiculos/{id} -> editar. Solo el dueño de la publicacion.
     @PutMapping("/{id}")
     public ResponseEntity<?> editar(@PathVariable UUID id, @Valid @RequestBody VehiculoRequest request, Authentication auth) {
-        try {
-            return ResponseEntity.ok(vehiculoService.editar(id, request, auth.getName()));
-        } catch (SecurityException e) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", e.getMessage()));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", e.getMessage()));
-        }
+    try {
+        VehiculoResponse actualizado = vehiculoService.editar(id, request, auth.getName());
+
+        return ResponseEntity.ok(Map.of(
+                "mensaje", "Vehiculo actualizado correctamente",
+                "vehiculo", actualizado
+        ));
+
+    } catch (SecurityException e) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(Map.of("error", e.getMessage()));
+
+    } catch (IllegalArgumentException e) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(Map.of("error", e.getMessage()));
     }
+}
 
     // DELETE /api/vehiculos/{id} -> eliminar. Solo el dueño de la publicacion.
     @DeleteMapping("/{id}")
