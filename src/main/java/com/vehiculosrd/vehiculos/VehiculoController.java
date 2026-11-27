@@ -96,6 +96,7 @@ public class VehiculoController {
         }
     }
 
+<<<<<<< HEAD
     // DELETE /api/vehiculos/{id}
     @DeleteMapping("/{id}")
     public ResponseEntity<?> eliminar(@PathVariable UUID id, Authentication auth) {
@@ -109,5 +110,26 @@ public class VehiculoController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(Map.of("error", e.getMessage()));
         }
+=======
+   // DELETE /api/vehiculos/{id} -> eliminar. Solo el dueño de la publicacion.
+@DeleteMapping("/{id}")
+public ResponseEntity<?> eliminar(@PathVariable UUID id, Authentication auth) {
+    try {
+        vehiculoService.eliminar(id, auth.getName());
+
+        return ResponseEntity.ok(Map.of(
+                "mensaje", "Vehiculo eliminado correctamente",
+                "id", id
+        ));
+
+    } catch (SecurityException e) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(Map.of("error", e.getMessage()));
+
+    } catch (IllegalArgumentException e) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(Map.of("error", e.getMessage()));
+>>>>>>> origin/feature/eliminar-vehiculo
     }
+}
 }
