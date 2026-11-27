@@ -22,7 +22,6 @@ public class VehiculoController {
         this.vehiculoService = vehiculoService;
     }
 
-    // GET /api/vehiculos
     @GetMapping
     public ResponseEntity<?> listar(
             @RequestParam(required = false) String marca,
@@ -44,13 +43,11 @@ public class VehiculoController {
         );
     }
 
-    // GET /api/vehiculos/mios
     @GetMapping("/mios")
     public List<VehiculoResponse> listarMios(Authentication auth) {
         return vehiculoService.listarPorUsuario(auth.getName());
     }
 
-    // GET /api/vehiculos/{id}
     @GetMapping("/{id}")
     public ResponseEntity<?> obtener(@PathVariable UUID id) {
         try {
@@ -61,7 +58,6 @@ public class VehiculoController {
         }
     }
 
-    // POST /api/vehiculos
     @PostMapping
     public ResponseEntity<?> crear(
             @Valid @RequestBody VehiculoRequest request,
@@ -71,7 +67,6 @@ public class VehiculoController {
         return ResponseEntity.status(HttpStatus.CREATED).body(creado);
     }
 
-    // PUT /api/vehiculos/{id}
     @PutMapping("/{id}")
     public ResponseEntity<?> editar(
             @PathVariable UUID id,
@@ -96,15 +91,20 @@ public class VehiculoController {
         }
     }
 
-    // DELETE /api/vehiculos/{id}
     @DeleteMapping("/{id}")
     public ResponseEntity<?> eliminar(@PathVariable UUID id, Authentication auth) {
         try {
             vehiculoService.eliminar(id, auth.getName());
-            return ResponseEntity.noContent().build();
+
+            return ResponseEntity.ok(Map.of(
+                    "mensaje", "Vehiculo eliminado correctamente",
+                    "id", id
+            ));
+
         } catch (SecurityException e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body(Map.of("error", e.getMessage()));
+
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(Map.of("error", e.getMessage()));
