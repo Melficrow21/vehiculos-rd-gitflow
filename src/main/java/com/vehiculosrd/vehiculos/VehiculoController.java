@@ -1,3 +1,4 @@
+
 package com.vehiculosrd.vehiculos;
 
 import jakarta.validation.Valid;
@@ -24,7 +25,7 @@ public class VehiculoController {
     // GET /api/vehiculos?marca=toyota&anio=2020&precioMin=200000&precioMax=800000&provincia=Santo+Domingo
     // Publico: no requiere token
     @GetMapping
-    public List<VehiculoResponse> listar(
+    public ResponseEntity<?> listar(
             @RequestParam(required = false) String marca,
             @RequestParam(required = false) String modelo,
             @RequestParam(required = false) Integer anio,
@@ -32,7 +33,16 @@ public class VehiculoController {
             @RequestParam(required = false) BigDecimal precioMax,
             @RequestParam(required = false) String provincia
     ) {
-        return vehiculoService.listar(marca, modelo, anio, precioMin, precioMax, provincia);
+        if (precioMin != null && precioMax != null
+                && precioMin.compareTo(precioMax) > 0) {
+            return ResponseEntity.badRequest().body(
+                    Map.of("error", "El precio minimo no puede ser mayor que el precio maximo")
+            );
+        }
+
+        return ResponseEntity.ok(
+                vehiculoService.listar(marca, modelo, anio, precioMin, precioMax, provincia)
+        );
     }
 
     // GET /api/vehiculos/mios -> las publicaciones del usuario logueado, en cualquier estado.
@@ -48,26 +58,36 @@ public class VehiculoController {
         try {
             return ResponseEntity.ok(vehiculoService.obtener(id));
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", e.getMessage()));
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", e.getMessage()));
         }
     }
 
     // POST /api/vehiculos -> crear publicacion. Requiere estar logueado.
     @PostMapping
-    public ResponseEntity<?> crear(@Valid @RequestBody VehiculoRequest request, Authentication auth) {
+    public ResponseEntity<?> crear(
+            @Valid @RequestBody VehiculoRequest request,
+            Authentication auth
+    ) {
         VehiculoResponse creado = vehiculoService.crear(request, auth.getName());
         return ResponseEntity.status(HttpStatus.CREATED).body(creado);
     }
 
     // PUT /api/vehiculos/{id} -> editar. Solo el dueño de la publicacion.
     @PutMapping("/{id}")
-    public ResponseEntity<?> editar(@PathVariable UUID id, @Valid @RequestBody VehiculoRequest request, Authentication auth) {
+    public ResponseEntity<?> editar(
+            @PathVariable UUID id,
+            @Valid @RequestBody VehiculoRequest request,
+            Authentication auth
+    ) {
         try {
             return ResponseEntity.ok(vehiculoService.editar(id, request, auth.getName()));
         } catch (SecurityException e) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", e.getMessage()));
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("error", e.getMessage()));
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", e.getMessage()));
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", e.getMessage()));
         }
     }
 
@@ -78,9 +98,11 @@ public class VehiculoController {
             vehiculoService.eliminar(id, auth.getName());
             return ResponseEntity.noContent().build();
         } catch (SecurityException e) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", e.getMessage()));
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("error", e.getMessage()));
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", e.getMessage()));
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", e.getMessage()));
         }
     }
 }
