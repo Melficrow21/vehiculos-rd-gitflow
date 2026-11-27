@@ -1,9 +1,11 @@
+
 package com.vehiculosrd.vehiculos;
 
 import com.vehiculosrd.usuarios.Usuario;
 import com.vehiculosrd.usuarios.UsuarioRepository;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Sort;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -34,7 +36,8 @@ public class VehiculoService {
                 // Las busquedas publicas solo muestran publicaciones disponibles
                 .and(estadoIgual("disponible"));
 
-        return vehiculoRepository.findAll(filtros).stream()
+        // Mostrar primero los vehiculos publicados mas recientemente
+        return vehiculoRepository.findAll(filtros, Sort.by(Sort.Direction.DESC, "creadoEn")).stream()
                 .map(VehiculoResponse::desde)
                 .toList();
     }
@@ -51,7 +54,7 @@ public class VehiculoService {
         Specification<Vehiculo> filtro = (root, query, cb) ->
                 cb.equal(root.get("usuario").get("email"), emailUsuario);
 
-        return vehiculoRepository.findAll(filtro).stream()
+        return vehiculoRepository.findAll(filtro, Sort.by(Sort.Direction.DESC, "creadoEn")).stream()
                 .map(VehiculoResponse::desde)
                 .toList();
     }
